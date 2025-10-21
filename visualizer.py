@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-Improved AWS Network Visualization Tool
+Enhanced AWS Network Visualization Tool
 
-This version creates cleaner, more readable diagrams with better layout and formatting.
-Uses HTML reports and simplified diagrams to avoid overlapping text.
+Creates interactive network diagrams with visual flow and grouped subnet cards.
 
 Usage:
-    python improved_visualizer.py network_discovery.json
-    python improved_visualizer.py network_discovery.json --format html
+    python enhanced_visualizer.py network_discovery.json
 
 Requirements:
     pip install jinja2
@@ -20,21 +18,14 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 
-class ImprovedNetworkVisualizer:
-    """Create clean, readable network documentation"""
+class EnhancedNetworkVisualizer:
+    """Create interactive network documentation with flow diagrams"""
     
     def __init__(self, discovery_file: str):
-        """
-        Initialize visualizer with discovery data
-        
-        Args:
-            discovery_file: Path to JSON file from network discovery
-        """
+        """Initialize visualizer with discovery data"""
         self.discovery_file = discovery_file
         self.data = self._load_data()
         self.output_dir = "network_reports"
-        
-        # Create output directory
         Path(self.output_dir).mkdir(exist_ok=True)
     
     def _load_data(self) -> Dict:
@@ -50,7 +41,7 @@ class ImprovedNetworkVisualizer:
             exit(1)
     
     def create_html_report(self):
-        """Create comprehensive HTML report with all network information"""
+        """Create comprehensive HTML report with flow diagram"""
         region = self.data.get('region', 'unknown')
         timestamp = self.data.get('timestamp', '')
         
@@ -76,7 +67,7 @@ class ImprovedNetworkVisualizer:
         }}
         
         .container {{
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             padding: 30px;
@@ -146,62 +137,70 @@ class ImprovedNetworkVisualizer:
             font-weight: bold;
         }}
         
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: white;
-        }}
-        
-        th {{
-            background: #232f3e;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }}
-        
-        td {{
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }}
-        
-        tr:hover {{
+        .flow-diagram {{
             background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            min-height: 400px;
+            overflow-x: auto;
         }}
         
-        .badge {{
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
+        .flow-container {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
         }}
         
-        .badge.public {{
-            background: #e3f2fd;
-            color: #1565c0;
+        .flow-row {{
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }}
         
-        .badge.private {{
-            background: #f3e5f5;
-            color: #6a1b9a;
+        .flow-item {{
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px 20px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
         }}
         
-        .badge.active {{
-            background: #e8f5e9;
-            color: #2e7d32;
+        .flow-item.internet {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
         }}
         
-        .badge.inactive {{
-            background: #ffebee;
-            color: #c62828;
+        .flow-item.igw {{
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+            font-weight: bold;
         }}
         
-        .badge.available {{
-            background: #e0f2f1;
-            color: #00695c;
+        .flow-item.nat {{
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            font-weight: bold;
+        }}
+        
+        .flow-item.vpc {{
+            background: linear-gradient(135deg, #f46b45 0%, #eea849 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }}
+        
+        .flow-arrow {{
+            font-size: 24px;
+            color: #6c757d;
         }}
         
         .vpc-section {{
@@ -225,26 +224,146 @@ class ImprovedNetworkVisualizer:
             color: white;
         }}
         
+        .subnet-group {{
+            margin: 30px 0;
+        }}
+        
+        .subnet-group-header {{
+            background: #495057;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }}
+        
+        .subnet-group-header.public {{
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+        }}
+        
+        .subnet-group-header.private {{
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }}
+        
         .subnet-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
         }}
         
         .subnet-card {{
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
             background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }}
+        
+        .subnet-card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }}
         
         .subnet-card.public {{
-            border-left: 4px solid #2193b0;
+            border-left: 6px solid #2193b0;
         }}
         
         .subnet-card.private {{
-            border-left: 4px solid #764ba2;
+            border-left: 6px solid #764ba2;
+        }}
+        
+        .subnet-card h4 {{
+            margin-bottom: 15px;
+            color: #232f3e;
+            font-size: 16px;
+        }}
+        
+        .subnet-info {{
+            margin: 10px 0;
+        }}
+        
+        .subnet-info-row {{
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 13px;
+        }}
+        
+        .subnet-info-label {{
+            font-weight: 600;
+            color: #495057;
+        }}
+        
+        .subnet-info-value {{
+            font-family: 'Courier New', monospace;
+            color: #212529;
+        }}
+        
+        .subnet-acl {{
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }}
+        
+        .subnet-acl-header {{
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }}
+        
+        .acl-summary {{
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }}
+        
+        .acl-rule {{
+            padding: 6px;
+            margin: 4px 0;
+            background: white;
+            border-left: 3px solid #6c757d;
+            border-radius: 3px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }}
+        
+        .acl-rule.allow {{
+            border-left-color: #28a745;
+        }}
+        
+        .acl-rule.deny {{
+            border-left-color: #dc3545;
+        }}
+        
+        .badge {{
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .badge.public {{
+            background: #e3f2fd;
+            color: #1565c0;
+        }}
+        
+        .badge.private {{
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }}
+        
+        .badge.active {{
+            background: #e8f5e9;
+            color: #2e7d32;
         }}
         
         .route-table {{
@@ -272,54 +391,13 @@ class ImprovedNetworkVisualizer:
             border-left: 3px solid #11998e;
         }}
         
-        .route-entry.vpn {{
-            border-left: 3px solid #f46b45;
-        }}
-        
         .route-entry.local {{
             border-left: 3px solid #999;
-        }}
-        
-        .nacl-rules {{
-            margin: 15px 0;
-        }}
-        
-        .rule {{
-            padding: 10px;
-            margin: 8px 0;
-            background: #f8f9fa;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-        }}
-        
-        .rule.allow {{
-            border-left: 4px solid #2e7d32;
-        }}
-        
-        .rule.deny {{
-            border-left: 4px solid #c62828;
-        }}
-        
-        .crowdstrike-highlight {{
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
         }}
         
         .info-box {{
             background: #e3f2fd;
             border-left: 4px solid #1976d2;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }}
-        
-        .warning-box {{
-            background: #fff3e0;
-            border-left: 4px solid #f57c00;
             padding: 15px;
             margin: 20px 0;
             border-radius: 4px;
@@ -339,13 +417,27 @@ class ImprovedNetworkVisualizer:
             margin-bottom: 20px;
         }}
         
-        @media print {{
-            body {{
-                background: white;
-            }}
-            .container {{
-                box-shadow: none;
-            }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }}
+        
+        th {{
+            background: #232f3e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }}
+        
+        td {{
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }}
+        
+        tr:hover {{
+            background: #f8f9fa;
         }}
     </style>
 </head>
@@ -380,38 +472,11 @@ class ImprovedNetworkVisualizer:
                 <div class="number">{summary.get('nat_gateways', 0)}</div>
             </div>
         </div>
-        
-        <table>
-            <tr>
-                <th>Component</th>
-                <th>Count</th>
-            </tr>
-            <tr>
-                <td>Internet Gateways</td>
-                <td>{summary.get('internet_gateways', 0)}</td>
-            </tr>
-            <tr>
-                <td>VPN Connections</td>
-                <td>{summary.get('vpn_connections', 0)}</td>
-            </tr>
-            <tr>
-                <td>VPC Peering Connections</td>
-                <td>{summary.get('vpc_peering_connections', 0)}</td>
-            </tr>
-            <tr>
-                <td>Transit Gateways</td>
-                <td>{summary.get('transit_gateways', 0)}</td>
-            </tr>
-            <tr>
-                <td>VPC Endpoints</td>
-                <td>{summary.get('vpc_endpoints', 0)}</td>
-            </tr>
-        </table>
 """
         
-        # VPC Details
+        # VPC Details with Flow Diagrams
         for vpc in self.data.get('vpcs', []):
-            html_content += self._generate_vpc_section(vpc)
+            html_content += self._generate_vpc_section_with_flow(vpc)
         
         # Connectivity Section
         html_content += self._generate_connectivity_section()
@@ -430,8 +495,8 @@ class ImprovedNetworkVisualizer:
         print(f"✅ HTML report created: {filename}")
         return filename
     
-    def _generate_vpc_section(self, vpc: Dict) -> str:
-        """Generate HTML section for a VPC"""
+    def _generate_vpc_section_with_flow(self, vpc: Dict) -> str:
+        """Generate VPC section with flow diagram and grouped subnets"""
         vpc_id = vpc['vpc_id']
         vpc_name = vpc.get('name', 'N/A')
         vpc_cidr = vpc['cidr_block']
@@ -445,162 +510,297 @@ class ImprovedNetworkVisualizer:
             </div>
 """
         
-        # Internet Gateway
-        if vpc.get('internet_gateway'):
+        # Network Flow Diagram
+        html += self._generate_flow_diagram(vpc)
+        
+        # Group subnets by type
+        public_subnets = [s for s in vpc.get('subnets', []) if s.get('subnet_type') == 'Public']
+        private_subnets = [s for s in vpc.get('subnets', []) if s.get('subnet_type') == 'Private']
+        
+        # Find NACL associations for each subnet
+        nacl_map = self._build_nacl_map(vpc)
+        
+        # Public Subnets Group
+        if public_subnets:
+            html += """
+            <div class="subnet-group">
+                <div class="subnet-group-header public">
+                    🌐 Public Subnets
+                </div>
+                <div class="subnet-grid">
+"""
+            for subnet in public_subnets:
+                html += self._generate_subnet_card(subnet, nacl_map, 'public')
+            
+            html += "</div></div>"
+        
+        # Private Subnets Group
+        if private_subnets:
+            html += """
+            <div class="subnet-group">
+                <div class="subnet-group-header private">
+                    🔒 Private Subnets
+                </div>
+                <div class="subnet-grid">
+"""
+            for subnet in private_subnets:
+                html += self._generate_subnet_card(subnet, nacl_map, 'private')
+            
+            html += "</div></div>"
+        
+        # Route Tables
+        html += "<h3>🗺️ Route Tables</h3>"
+        for rt in vpc.get('route_tables', []):
+            html += self._generate_route_table(rt, vpc)
+        
+        html += "</div>"
+        
+        return html
+    
+    def _generate_flow_diagram(self, vpc: Dict) -> str:
+        """Generate network flow visualization"""
+        has_igw = vpc.get('internet_gateway') is not None
+        nat_gateways = vpc.get('nat_gateways', [])
+        has_vpn = vpc.get('vpn_gateway') is not None
+        
+        html = """
+        <h3>📊 Network Flow</h3>
+        <div class="flow-diagram">
+            <div class="flow-container">
+"""
+        
+        # Internet level
+        if has_igw or has_vpn:
+            html += """
+                <div class="flow-row">
+                    <div class="flow-item internet">🌐 Internet</div>
+"""
+            if has_vpn:
+                html += """
+                    <div class="flow-item internet">🔒 On-Premises</div>
+"""
+            html += "</div>"
+            
+            html += """
+                <div class="flow-arrow">↓</div>
+"""
+        
+        # Gateway level
+        html += '<div class="flow-row">'
+        
+        if has_igw:
             igw = vpc['internet_gateway']
             html += f"""
-            <div class="info-box">
-                <strong>🌐 Internet Gateway:</strong> {igw['igw_id']} 
-                <span class="badge active">{igw['state']}</span>
-            </div>
+                <div class="flow-item igw">
+                    Internet Gateway<br>
+                    <small>{igw['igw_id']}</small>
+                </div>
 """
         
-        # VPN Gateway
-        if vpc.get('vpn_gateway'):
+        if has_vpn:
             vgw = vpc['vpn_gateway']
             html += f"""
-            <div class="info-box">
-                <strong>🔒 VPN Gateway:</strong> {vgw['vgw_id']} 
-                <span class="badge {vgw['state']}">{vgw['state']}</span>
+                <div class="flow-item igw">
+                    VPN Gateway<br>
+                    <small>{vgw['vgw_id']}</small>
+                </div>
+"""
+        
+        html += '</div>'
+        
+        html += """
+            <div class="flow-arrow">↓</div>
+"""
+        
+        # VPC level
+        html += f"""
+            <div class="flow-row">
+                <div class="flow-item vpc">
+                    VPC: {vpc.get('name', 'N/A')}<br>
+                    <small>{vpc['cidr_block']}</small>
+                </div>
             </div>
 """
         
-        # NAT Gateways
-        if vpc.get('nat_gateways'):
-            html += f"""
-            <div class="info-box">
-                <strong>🔄 NAT Gateways:</strong> {len(vpc['nat_gateways'])}
-                <ul>
+        html += """
+            <div class="flow-arrow">↓</div>
 """
-            for nat in vpc['nat_gateways']:
-                html += f"<li>{nat['nat_gateway_id']} in {nat.get('subnet_id', 'N/A')} - {nat['state']}</li>"
-            html += "</ul></div>"
         
-        # Subnets
-        html += "<h3>📍 Subnets</h3><div class='subnet-grid'>"
+        # Subnets level
+        public_count = len([s for s in vpc.get('subnets', []) if s.get('subnet_type') == 'Public'])
+        private_count = len([s for s in vpc.get('subnets', []) if s.get('subnet_type') == 'Private'])
         
-        for subnet in vpc.get('subnets', []):
-            subnet_type = subnet.get('subnet_type', 'Unknown')
-            class_name = subnet_type.lower()
+        html += '<div class="flow-row">'
+        
+        if public_count > 0:
+            html += f"""
+                <div class="flow-item" style="background: #e3f2fd; border-color: #2193b0; font-weight: bold;">
+                    {public_count} Public Subnet{'s' if public_count > 1 else ''}<br>
+                    <small>Direct Internet Access</small>
+                </div>
+"""
+        
+        if len(nat_gateways) > 0:
+            html += f"""
+                <div class="flow-item nat">
+                    {len(nat_gateways)} NAT Gateway{'s' if len(nat_gateways) > 1 else ''}<br>
+                    <small>Outbound Only</small>
+                </div>
+"""
+        
+        html += '</div>'
+        
+        if private_count > 0:
+            html += """
+                <div class="flow-arrow">↓</div>
+                <div class="flow-row">
+                    <div class="flow-item" style="background: #f3e5f5; border-color: #764ba2; font-weight: bold;">
+"""
+            html += f"""
+                        {private_count} Private Subnet{'s' if private_count > 1 else ''}<br>
+                        <small>No Direct Internet Access</small>
+                    </div>
+                </div>
+"""
+        
+        html += """
+            </div>
+        </div>
+"""
+        
+        return html
+    
+    def _build_nacl_map(self, vpc: Dict) -> Dict:
+        """Build mapping of subnet to NACL"""
+        nacl_map = {}
+        
+        for nacl in vpc.get('nacls', []):
+            nacl_id = nacl['nacl_id']
+            nacl_name = nacl.get('name', 'N/A')
+            
+            for subnet_id in nacl.get('associated_subnets', []):
+                nacl_map[subnet_id] = {
+                    'nacl_id': nacl_id,
+                    'nacl_name': nacl_name,
+                    'is_default': nacl.get('is_default', False),
+                    'inbound_rules': nacl.get('inbound_rules', [])[:5],
+                    'outbound_rules': nacl.get('outbound_rules', [])[:5]
+                }
+        
+        return nacl_map
+    
+    def _generate_subnet_card(self, subnet: Dict, nacl_map: Dict, subnet_type: str) -> str:
+        """Generate individual subnet card with ACL info"""
+        subnet_id = subnet['subnet_id']
+        subnet_name = subnet.get('name', 'N/A')
+        
+        html = f"""
+            <div class="subnet-card {subnet_type}">
+                <h4>{subnet_name}</h4>
+                <div class="subnet-info">
+                    <div class="subnet-info-row">
+                        <span class="subnet-info-label">Subnet ID:</span>
+                        <span class="subnet-info-value">{subnet_id}</span>
+                    </div>
+                    <div class="subnet-info-row">
+                        <span class="subnet-info-label">CIDR Block:</span>
+                        <span class="subnet-info-value">{subnet['cidr_block']}</span>
+                    </div>
+                    <div class="subnet-info-row">
+                        <span class="subnet-info-label">Availability Zone:</span>
+                        <span class="subnet-info-value">{subnet['availability_zone']}</span>
+                    </div>
+                    <div class="subnet-info-row">
+                        <span class="subnet-info-label">Available IPs:</span>
+                        <span class="subnet-info-value">{subnet['available_ip_count']}</span>
+                    </div>
+                </div>
+"""
+        
+        # Add NACL information
+        if subnet_id in nacl_map:
+            nacl_info = nacl_map[subnet_id]
+            default_text = ' (Default)' if nacl_info['is_default'] else ''
             
             html += f"""
-            <div class="subnet-card {class_name}">
-                <h4>{subnet.get('name', 'N/A')}</h4>
-                <div><span class="badge {class_name}">{subnet_type}</span></div>
-                <div class="code" style="margin: 10px 0;">{subnet['subnet_id']}</div>
-                <div><strong>CIDR:</strong> {subnet['cidr_block']}</div>
-                <div><strong>AZ:</strong> {subnet['availability_zone']}</div>
-                <div><strong>Available IPs:</strong> {subnet['available_ip_count']}</div>
-            </div>
+                <div class="subnet-acl">
+                    <div class="subnet-acl-header">🛡️ Network ACL: {nacl_info['nacl_name']}{default_text}</div>
+                    <div class="acl-summary">
+                        <div style="font-weight: 600; margin-bottom: 5px;">Inbound Rules:</div>
+"""
+            
+            for rule in nacl_info['inbound_rules']:
+                if rule['rule_number'] < 32767:
+                    action_class = rule['action']
+                    port_info = rule.get('port_range', 'All')
+                    html += f"""
+                        <div class="acl-rule {action_class}">
+                            #{rule['rule_number']}: {rule['action'].upper()} {rule['protocol']} from {rule['cidr']} port {port_info}
+                        </div>
+"""
+            
+            html += """
+                        <div style="font-weight: 600; margin-top: 10px; margin-bottom: 5px;">Outbound Rules:</div>
+"""
+            
+            for rule in nacl_info['outbound_rules']:
+                if rule['rule_number'] < 32767:
+                    action_class = rule['action']
+                    port_info = rule.get('port_range', 'All')
+                    html += f"""
+                        <div class="acl-rule {action_class}">
+                            #{rule['rule_number']}: {rule['action'].upper()} {rule['protocol']} to {rule['cidr']} port {port_info}
+                        </div>
+"""
+            
+            html += """
+                    </div>
+                </div>
 """
         
         html += "</div>"
         
-        # Route Tables
-        html += "<h3>🗺️ Route Tables</h3>"
+        return html
+    
+    def _generate_route_table(self, rt: Dict, vpc: Dict) -> str:
+        """Generate route table section"""
+        rt_name = rt.get('name', 'N/A')
+        rt_id = rt['route_table_id']
+        is_main = rt['is_main']
+        associated_subnets = rt.get('associated_subnets', [])
         
-        for rt in vpc.get('route_tables', []):
-            rt_name = rt.get('name', 'N/A')
-            rt_id = rt['route_table_id']
-            is_main = rt['is_main']
-            associated_subnets = rt.get('associated_subnets', [])
+        html = f"""
+        <div class="route-table">
+            <h4>{rt_name} {'(Main)' if is_main else ''}</h4>
+            <div class="code">{rt_id}</div>
+            <div><strong>Associated Subnets:</strong> {len(associated_subnets)}</div>
+"""
+        
+        if associated_subnets:
+            html += "<ul>"
+            for subnet_id in associated_subnets:
+                subnet_name = 'N/A'
+                for subnet in vpc.get('subnets', []):
+                    if subnet['subnet_id'] == subnet_id:
+                        subnet_name = subnet.get('name', 'N/A')
+                        break
+                html += f"<li>{subnet_name} ({subnet_id})</li>"
+            html += "</ul>"
+        
+        html += "<div style='margin-top: 15px;'><strong>Routes:</strong></div>"
+        
+        for route in rt.get('routes', []):
+            target_type = route['target_type']
+            destination = route['destination']
+            target = route['target']
             
             html += f"""
-            <div class="route-table">
-                <h4>{rt_name} {'(Main)' if is_main else ''}</h4>
-                <div class="code">{rt_id}</div>
-                <div><strong>Associated Subnets:</strong> {len(associated_subnets)}</div>
+            <div class="route-entry {target_type}">
+                <strong>{destination}</strong> → {target} ({target_type})
+            </div>
 """
-            
-            if associated_subnets:
-                html += "<ul>"
-                for subnet_id in associated_subnets:
-                    # Find subnet name
-                    subnet_name = 'N/A'
-                    for subnet in vpc.get('subnets', []):
-                        if subnet['subnet_id'] == subnet_id:
-                            subnet_name = subnet.get('name', 'N/A')
-                            break
-                    html += f"<li>{subnet_name} ({subnet_id})</li>"
-                html += "</ul>"
-            
-            html += "<div style='margin-top: 15px;'><strong>Routes:</strong></div>"
-            
-            for route in rt.get('routes', []):
-                target_type = route['target_type']
-                destination = route['destination']
-                target = route['target']
-                
-                html += f"""
-                <div class="route-entry {target_type}">
-                    <strong>{destination}</strong> → {target} ({target_type})
-                </div>
-"""
-            
-            html += "</div>"
         
-        # Network ACLs
-        html += "<h3>🛡️ Network ACLs</h3>"
-        
-        for nacl in vpc.get('nacls', []):
-            nacl_name = nacl.get('name', 'N/A')
-            nacl_id = nacl['nacl_id']
-            is_default = nacl['is_default']
-            associated_subnets = nacl.get('associated_subnets', [])
-            
-            html += f"""
-            <div class="route-table">
-                <h4>{nacl_name} {'(Default)' if is_default else ''}</h4>
-                <div class="code">{nacl_id}</div>
-                <div><strong>Associated Subnets:</strong> {len(associated_subnets)}</div>
-"""
-            
-            # Check for potential CrowdStrike IPs
-            crowdstrike_found = False
-            for rule in nacl.get('inbound_rules', []) + nacl.get('outbound_rules', []):
-                cidr = rule.get('cidr', '')
-                # Common CrowdStrike IP ranges (52.x.x.x, 34.x.x.x, etc.)
-                if cidr and (cidr.startswith('52.') or cidr.startswith('34.') or 
-                           cidr.startswith('35.') or cidr.startswith('54.')):
-                    crowdstrike_found = True
-                    break
-            
-            if crowdstrike_found:
-                html += """
-                <div class="crowdstrike-highlight">
-                    ⚠️ <strong>Potential CrowdStrike Rules Detected</strong>
-                </div>
-"""
-            
-            # Inbound Rules
-            html += "<div class='nacl-rules'><strong>Inbound Rules:</strong>"
-            for rule in nacl.get('inbound_rules', [])[:10]:  # Show first 10
-                if rule['rule_number'] < 32767:  # Skip default deny
-                    action_class = rule['action']
-                    html += f"""
-                    <div class="rule {action_class}">
-                        #{rule['rule_number']}: <strong>{rule['action'].upper()}</strong> 
-                        {rule['protocol']} from {rule['cidr']} 
-                        port {rule.get('port_range', 'All')}
-                    </div>
-"""
-            html += "</div>"
-            
-            # Outbound Rules
-            html += "<div class='nacl-rules'><strong>Outbound Rules:</strong>"
-            for rule in nacl.get('outbound_rules', [])[:10]:  # Show first 10
-                if rule['rule_number'] < 32767:  # Skip default deny
-                    action_class = rule['action']
-                    html += f"""
-                    <div class="rule {action_class}">
-                        #{rule['rule_number']}: <strong>{rule['action'].upper()}</strong> 
-                        {rule['protocol']} to {rule['cidr']} 
-                        port {rule.get('port_range', 'All')}
-                    </div>
-"""
-            html += "</div></div>"
-        
-        html += "</div>"  # Close vpc-section
+        html += "</div>"
         
         return html
     
@@ -697,425 +897,30 @@ class ImprovedNetworkVisualizer:
             html += "</table>"
         
         return html
-    
-    def create_text_report(self):
-        """Create clean text-based report"""
-        region = self.data.get('region', 'unknown')
-        filename = f"{self.output_dir}/network_report_{region}.txt"
-        
-        with open(filename, 'w') as f:
-            f.write("="*80 + "\n")
-            f.write(f"AWS NETWORK INFRASTRUCTURE REPORT - {region.upper()}\n")
-            f.write("="*80 + "\n\n")
-            
-            # Summary
-            summary = self.data.get('summary', {})
-            f.write("SUMMARY\n")
-            f.write("-"*80 + "\n")
-            f.write(f"Total VPCs:               {summary.get('total_vpcs', 0)}\n")
-            f.write(f"Total Subnets:            {summary.get('total_subnets', 0)}\n")
-            f.write(f"  - Public:               {summary.get('public_subnets', 0)}\n")
-            f.write(f"  - Private:              {summary.get('private_subnets', 0)}\n")
-            f.write(f"Internet Gateways:        {summary.get('internet_gateways', 0)}\n")
-            f.write(f"NAT Gateways:             {summary.get('nat_gateways', 0)}\n")
-            f.write(f"VPN Connections:          {summary.get('vpn_connections', 0)}\n")
-            f.write(f"VPC Peering:              {summary.get('vpc_peering_connections', 0)}\n")
-            f.write(f"Transit Gateways:         {summary.get('transit_gateways', 0)}\n")
-            f.write(f"VPC Endpoints:            {summary.get('vpc_endpoints', 0)}\n")
-            f.write("\n")
-            
-            # VPC Details
-            for vpc in self.data.get('vpcs', []):
-                self._write_vpc_text(f, vpc)
-            
-            # Connectivity
-            self._write_connectivity_text(f)
-        
-        print(f"✅ Text report created: {filename}")
-        return filename
-    
-    def _write_vpc_text(self, f, vpc: Dict):
-        """Write VPC details to text file"""
-        f.write("="*80 + "\n")
-        f.write(f"VPC: {vpc.get('name', 'N/A')}\n")
-        f.write("="*80 + "\n")
-        f.write(f"VPC ID:        {vpc['vpc_id']}\n")
-        f.write(f"CIDR Block:    {vpc['cidr_block']}\n")
-        f.write(f"Default VPC:   {'Yes' if vpc.get('is_default') else 'No'}\n")
-        
-        if vpc.get('internet_gateway'):
-            igw = vpc['internet_gateway']
-            f.write(f"Internet GW:   {igw['igw_id']} ({igw['state']})\n")
-        
-        if vpc.get('vpn_gateway'):
-            vgw = vpc['vpn_gateway']
-            f.write(f"VPN Gateway:   {vgw['vgw_id']} ({vgw['state']})\n")
-        
-        if vpc.get('nat_gateways'):
-            f.write(f"NAT Gateways:  {len(vpc['nat_gateways'])}\n")
-        
-        f.write("\n")
-        
-        # Subnets
-        f.write("SUBNETS\n")
-        f.write("-"*80 + "\n")
-        for subnet in vpc.get('subnets', []):
-            f.write(f"  {subnet.get('name', 'N/A'):30} [{subnet['subnet_type']:7}]\n")
-            f.write(f"    ID:               {subnet['subnet_id']}\n")
-            f.write(f"    CIDR:             {subnet['cidr_block']}\n")
-            f.write(f"    Availability Zone: {subnet['availability_zone']}\n")
-            f.write(f"    Available IPs:    {subnet['available_ip_count']}\n")
-            f.write("\n")
-        
-        # Route Tables (abbreviated)
-        f.write("ROUTE TABLES\n")
-        f.write("-"*80 + "\n")
-        for rt in vpc.get('route_tables', []):
-            f.write(f"  {rt.get('name', 'N/A'):30} {'[MAIN]' if rt['is_main'] else ''}\n")
-            f.write(f"    ID: {rt['route_table_id']}\n")
-            f.write(f"    Associated Subnets: {len(rt.get('associated_subnets', []))}\n")
-            f.write("    Key Routes:\n")
-            for route in rt.get('routes', []):
-                if route['target_type'] != 'local':
-                    f.write(f"      {route['destination']:20} -> {route['target']:25} ({route['target_type']})\n")
-            f.write("\n")
-        
-        # Network ACLs (with CrowdStrike detection)
-        f.write("NETWORK ACLs\n")
-        f.write("-"*80 + "\n")
-        for nacl in vpc.get('nacls', []):
-            f.write(f"  {nacl.get('name', 'N/A'):30} {'[DEFAULT]' if nacl['is_default'] else ''}\n")
-            f.write(f"    ID: {nacl['nacl_id']}\n")
-            f.write(f"    Associated Subnets: {len(nacl.get('associated_subnets', []))}\n")
-            
-            # Check for CrowdStrike IPs
-            crowdstrike_rules = []
-            for rule in nacl.get('inbound_rules', []) + nacl.get('outbound_rules', []):
-                cidr = rule.get('cidr', '')
-                if cidr and (cidr.startswith('52.') or cidr.startswith('34.') or 
-                           cidr.startswith('35.') or cidr.startswith('54.')):
-                    crowdstrike_rules.append(rule)
-            
-            if crowdstrike_rules:
-                f.write("    *** POTENTIAL CROWDSTRIKE RULES DETECTED ***\n")
-            
-            f.write("    Inbound Rules (first 5):\n")
-            for rule in nacl.get('inbound_rules', [])[:5]:
-                if rule['rule_number'] < 32767:
-                    f.write(f"      #{rule['rule_number']:5} {rule['action']:6} {rule['protocol']:8} "
-                           f"from {rule['cidr']:20} port {rule.get('port_range', 'All')}\n")
-            
-            f.write("    Outbound Rules (first 5):\n")
-            for rule in nacl.get('outbound_rules', [])[:5]:
-                if rule['rule_number'] < 32767:
-                    f.write(f"      #{rule['rule_number']:5} {rule['action']:6} {rule['protocol']:8} "
-                           f"to {rule['cidr']:20} port {rule.get('port_range', 'All')}\n")
-            f.write("\n")
-        
-        f.write("\n")
-    
-    def _write_connectivity_text(self, f):
-        """Write connectivity details to text file"""
-        f.write("="*80 + "\n")
-        f.write("NETWORK CONNECTIVITY\n")
-        f.write("="*80 + "\n\n")
-        
-        connectivity = self.data.get('connectivity', {})
-        
-        # VPC Peering
-        peering = connectivity.get('vpc_peering', [])
-        if peering:
-            f.write("VPC PEERING CONNECTIONS\n")
-            f.write("-"*80 + "\n")
-            for peer in peering:
-                f.write(f"  {peer.get('name', 'N/A')}\n")
-                f.write(f"    Peering ID:  {peer['peering_id']}\n")
-                f.write(f"    Status:      {peer['status']}\n")
-                f.write(f"    Requester:   {peer['requester']['vpc_id']} ({peer['requester']['cidr']})\n")
-                f.write(f"    Accepter:    {peer['accepter']['vpc_id']} ({peer['accepter']['cidr']})\n")
-                f.write("\n")
-        
-        # VPN Connections
-        vpn_connections = connectivity.get('vpn_connections', [])
-        if vpn_connections:
-            f.write("VPN CONNECTIONS\n")
-            f.write("-"*80 + "\n")
-            for vpn in vpn_connections:
-                f.write(f"  {vpn.get('name', 'N/A')}\n")
-                f.write(f"    VPN ID:      {vpn['vpn_id']}\n")
-                f.write(f"    State:       {vpn['state']}\n")
-                f.write(f"    Type:        {vpn['type']}\n")
-                f.write(f"    Customer GW: {vpn.get('customer_gateway_ip', 'N/A')}\n")
-                f.write("\n")
-        
-        # Transit Gateways
-        tgws = connectivity.get('transit_gateways', [])
-        if tgws:
-            f.write("TRANSIT GATEWAYS\n")
-            f.write("-"*80 + "\n")
-            for tgw in tgws:
-                f.write(f"  {tgw.get('name', 'N/A')}\n")
-                f.write(f"    TGW ID:      {tgw['tgw_id']}\n")
-                f.write(f"    State:       {tgw['state']}\n")
-                f.write(f"    Attachments: {len(tgw.get('attachments', []))}\n")
-                for att in tgw.get('attachments', []):
-                    f.write(f"      - {att['resource_type']:10} {att['resource_id']:30} ({att['state']})\n")
-                f.write("\n")
-        
-        # VPC Endpoints
-        endpoints = connectivity.get('vpc_endpoints', [])
-        if endpoints:
-            f.write("VPC ENDPOINTS\n")
-            f.write("-"*80 + "\n")
-            for ep in endpoints:
-                f.write(f"    {ep['endpoint_id']:30} {ep['service_name']:50} ({ep['state']})\n")
-            f.write("\n")
-    
-    def create_markdown_report(self):
-        """Create Markdown report for documentation"""
-        region = self.data.get('region', 'unknown')
-        timestamp = self.data.get('timestamp', '')
-        filename = f"{self.output_dir}/network_report_{region}.md"
-        
-        with open(filename, 'w') as f:
-            f.write(f"# AWS Network Infrastructure Report - {region}\n\n")
-            f.write(f"**Generated:** {timestamp}\n\n")
-            f.write("---\n\n")
-            
-            # Summary
-            summary = self.data.get('summary', {})
-            f.write("## Summary\n\n")
-            f.write("| Component | Count |\n")
-            f.write("|-----------|-------|\n")
-            f.write(f"| VPCs | {summary.get('total_vpcs', 0)} |\n")
-            f.write(f"| Total Subnets | {summary.get('total_subnets', 0)} |\n")
-            f.write(f"| - Public Subnets | {summary.get('public_subnets', 0)} |\n")
-            f.write(f"| - Private Subnets | {summary.get('private_subnets', 0)} |\n")
-            f.write(f"| Internet Gateways | {summary.get('internet_gateways', 0)} |\n")
-            f.write(f"| NAT Gateways | {summary.get('nat_gateways', 0)} |\n")
-            f.write(f"| VPN Connections | {summary.get('vpn_connections', 0)} |\n")
-            f.write(f"| VPC Peering | {summary.get('vpc_peering_connections', 0)} |\n")
-            f.write(f"| Transit Gateways | {summary.get('transit_gateways', 0)} |\n")
-            f.write(f"| VPC Endpoints | {summary.get('vpc_endpoints', 0)} |\n")
-            f.write("\n---\n\n")
-            
-            # VPC Details
-            for vpc in self.data.get('vpcs', []):
-                self._write_vpc_markdown(f, vpc)
-            
-            # Connectivity
-            self._write_connectivity_markdown(f)
-        
-        print(f"✅ Markdown report created: {filename}")
-        return filename
-    
-    def _write_vpc_markdown(self, f, vpc: Dict):
-        """Write VPC details to markdown file"""
-        vpc_name = vpc.get('name', 'N/A')
-        vpc_id = vpc['vpc_id']
-        vpc_cidr = vpc['cidr_block']
-        
-        f.write(f"## VPC: {vpc_name}\n\n")
-        f.write(f"**VPC ID:** `{vpc_id}`  \n")
-        f.write(f"**CIDR Block:** `{vpc_cidr}`  \n")
-        f.write(f"**Default VPC:** {'Yes' if vpc.get('is_default') else 'No'}  \n")
-        
-        if vpc.get('internet_gateway'):
-            igw = vpc['internet_gateway']
-            f.write(f"**Internet Gateway:** `{igw['igw_id']}` ({igw['state']})  \n")
-        
-        if vpc.get('vpn_gateway'):
-            vgw = vpc['vpn_gateway']
-            f.write(f"**VPN Gateway:** `{vgw['vgw_id']}` ({vgw['state']})  \n")
-        
-        if vpc.get('nat_gateways'):
-            f.write(f"**NAT Gateways:** {len(vpc['nat_gateways'])}  \n")
-        
-        f.write("\n")
-        
-        # Subnets
-        f.write("### Subnets\n\n")
-        f.write("| Name | ID | Type | CIDR | AZ | Available IPs |\n")
-        f.write("|------|----|----- |------|----|--------------|\n")
-        
-        for subnet in vpc.get('subnets', []):
-            f.write(f"| {subnet.get('name', 'N/A')} | `{subnet['subnet_id']}` | "
-                   f"**{subnet['subnet_type']}** | `{subnet['cidr_block']}` | "
-                   f"{subnet['availability_zone']} | {subnet['available_ip_count']} |\n")
-        
-        f.write("\n")
-        
-        # Route Tables
-        f.write("### Route Tables\n\n")
-        
-        for rt in vpc.get('route_tables', []):
-            rt_name = rt.get('name', 'N/A')
-            rt_id = rt['route_table_id']
-            is_main = rt['is_main']
-            
-            f.write(f"#### {rt_name} {'(Main)' if is_main else ''}\n\n")
-            f.write(f"**Route Table ID:** `{rt_id}`  \n")
-            f.write(f"**Associated Subnets:** {len(rt.get('associated_subnets', []))}  \n\n")
-            
-            f.write("**Routes:**\n\n")
-            f.write("| Destination | Target | Type |\n")
-            f.write("|-------------|--------|------|\n")
-            
-            for route in rt.get('routes', []):
-                f.write(f"| `{route['destination']}` | `{route['target']}` | {route['target_type']} |\n")
-            
-            f.write("\n")
-        
-        # Network ACLs
-        f.write("### Network ACLs\n\n")
-        
-        for nacl in vpc.get('nacls', []):
-            nacl_name = nacl.get('name', 'N/A')
-            nacl_id = nacl['nacl_id']
-            is_default = nacl['is_default']
-            
-            f.write(f"#### {nacl_name} {'(Default)' if is_default else ''}\n\n")
-            f.write(f"**NACL ID:** `{nacl_id}`  \n")
-            f.write(f"**Associated Subnets:** {len(nacl.get('associated_subnets', []))}  \n\n")
-            
-            # Check for CrowdStrike
-            crowdstrike_found = False
-            for rule in nacl.get('inbound_rules', []) + nacl.get('outbound_rules', []):
-                cidr = rule.get('cidr', '')
-                if cidr and (cidr.startswith('52.') or cidr.startswith('34.') or 
-                           cidr.startswith('35.') or cidr.startswith('54.')):
-                    crowdstrike_found = True
-                    break
-            
-            if crowdstrike_found:
-                f.write("> ⚠️ **Potential CrowdStrike Rules Detected**\n\n")
-            
-            f.write("**Inbound Rules:**\n\n")
-            f.write("| Rule # | Action | Protocol | CIDR | Port |\n")
-            f.write("|--------|--------|----------|------|------|\n")
-            
-            for rule in nacl.get('inbound_rules', [])[:10]:
-                if rule['rule_number'] < 32767:
-                    f.write(f"| {rule['rule_number']} | {rule['action']} | {rule['protocol']} | "
-                           f"`{rule['cidr']}` | {rule.get('port_range', 'All')} |\n")
-            
-            f.write("\n**Outbound Rules:**\n\n")
-            f.write("| Rule # | Action | Protocol | CIDR | Port |\n")
-            f.write("|--------|--------|----------|------|------|\n")
-            
-            for rule in nacl.get('outbound_rules', [])[:10]:
-                if rule['rule_number'] < 32767:
-                    f.write(f"| {rule['rule_number']} | {rule['action']} | {rule['protocol']} | "
-                           f"`{rule['cidr']}` | {rule.get('port_range', 'All')} |\n")
-            
-            f.write("\n")
-        
-        f.write("---\n\n")
-    
-    def _write_connectivity_markdown(self, f):
-        """Write connectivity details to markdown file"""
-        f.write("## Network Connectivity\n\n")
-        
-        connectivity = self.data.get('connectivity', {})
-        
-        # VPC Peering
-        peering = connectivity.get('vpc_peering', [])
-        if peering:
-            f.write("### VPC Peering Connections\n\n")
-            f.write("| Name | Peering ID | Requester VPC | Accepter VPC | Status |\n")
-            f.write("|------|------------|---------------|--------------|--------|\n")
-            
-            for peer in peering:
-                f.write(f"| {peer.get('name', 'N/A')} | `{peer['peering_id']}` | "
-                       f"`{peer['requester']['vpc_id']}` ({peer['requester']['cidr']}) | "
-                       f"`{peer['accepter']['vpc_id']}` ({peer['accepter']['cidr']}) | "
-                       f"{peer['status']} |\n")
-            
-            f.write("\n")
-        
-        # VPN Connections
-        vpn_connections = connectivity.get('vpn_connections', [])
-        if vpn_connections:
-            f.write("### VPN Connections\n\n")
-            f.write("| Name | VPN ID | State | Type | Customer Gateway IP |\n")
-            f.write("|------|--------|-------|------|--------------------|\n")
-            
-            for vpn in vpn_connections:
-                f.write(f"| {vpn.get('name', 'N/A')} | `{vpn['vpn_id']}` | "
-                       f"{vpn['state']} | {vpn['type']} | "
-                       f"{vpn.get('customer_gateway_ip', 'N/A')} |\n")
-            
-            f.write("\n")
-        
-        # Transit Gateways
-        tgws = connectivity.get('transit_gateways', [])
-        if tgws:
-            f.write("### Transit Gateways\n\n")
-            
-            for tgw in tgws:
-                f.write(f"#### {tgw.get('name', 'N/A')}\n\n")
-                f.write(f"**TGW ID:** `{tgw['tgw_id']}`  \n")
-                f.write(f"**State:** {tgw['state']}  \n")
-                f.write(f"**Attachments:** {len(tgw.get('attachments', []))}  \n\n")
-                
-                if tgw.get('attachments'):
-                    f.write("| Resource Type | Resource ID | State |\n")
-                    f.write("|---------------|-------------|-------|\n")
-                    
-                    for att in tgw['attachments']:
-                        f.write(f"| {att['resource_type']} | `{att['resource_id']}` | {att['state']} |\n")
-                    
-                    f.write("\n")
-        
-        # VPC Endpoints
-        endpoints = connectivity.get('vpc_endpoints', [])
-        if endpoints:
-            f.write("### VPC Endpoints\n\n")
-            f.write("| Endpoint ID | Service | VPC | Type | State |\n")
-            f.write("|-------------|---------|-----|------|-------|\n")
-            
-            for ep in endpoints:
-                f.write(f"| `{ep['endpoint_id']}` | {ep['service_name']} | "
-                       f"`{ep['vpc_id']}` | {ep['endpoint_type']} | {ep['state']} |\n")
-            
-            f.write("\n")
 
 
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description='Improved AWS Network Visualization - Clean, readable reports'
+        description='Enhanced AWS Network Visualization with Flow Diagrams'
     )
     parser.add_argument(
         'discovery_file',
         help='Path to JSON file from network discovery tool'
     )
-    parser.add_argument(
-        '--format',
-        choices=['html', 'text', 'markdown', 'all'],
-        default='html',
-        help='Output format (default: html)'
-    )
     
     args = parser.parse_args()
     
     try:
-        visualizer = ImprovedNetworkVisualizer(args.discovery_file)
+        visualizer = EnhancedNetworkVisualizer(args.discovery_file)
         
         print("\n" + "="*80)
-        print("Creating Network Documentation")
+        print("Creating Enhanced Network Documentation")
         print("="*80 + "\n")
         
-        if args.format == 'html' or args.format == 'all':
-            visualizer.create_html_report()
+        visualizer.create_html_report()
         
-        if args.format == 'text' or args.format == 'all':
-            visualizer.create_text_report()
-        
-        if args.format == 'markdown' or args.format == 'all':
-            visualizer.create_markdown_report()
-        
-        print(f"\n✅ Reports saved in: {visualizer.output_dir}/")
+        print(f"\n✅ Report saved in: {visualizer.output_dir}/")
         print("\n" + "="*80)
         
     except Exception as e:
