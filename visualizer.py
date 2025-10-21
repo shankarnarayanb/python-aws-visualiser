@@ -1247,7 +1247,7 @@ class EnhancedNetworkVisualizer:
                     </span>
 """
         
-        html += """
+        html += f"""
                 </div>
                 <div class="subnet-info">
                     <div class="subnet-info-row">
@@ -1267,7 +1267,7 @@ class EnhancedNetworkVisualizer:
                         <span class="subnet-info-value">{subnet['available_ip_count']}</span>
                     </div>
                 </div>
-""".format(subnet_id=subnet_id, subnet=subnet)
+"""
         
         # Add security risk summary if there are issues
         if security_score and security_score['total_issues'] > 0:
